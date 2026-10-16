@@ -1,0 +1,53 @@
+repository: https://github.com/ZIRUING/Programmable-Network-Lab
+
+answers:
+  planes:
+    question: "Where are the data, control and management planes in your network?"
+    answer: |
+      In my network, the data plane consists of the LinuxBridge kernel switches (s1 to s4) forwarding frames between connected hosts (h1 through h8) based on MAC address tables.
+
+      The control plane runs locally on each switch, learning MAC addresses from incoming traffic and updating port tables automatically without a centralized SDN controller.
+
+      The management plane consists of build_topo.py and topology.yaml, which configure, start, and tear down the network infrastructure from the host container.
+
+  learning:
+    question: "How did your switches learn which port leads to each host? Use your MAC table evidence."
+    answer: |
+      The switches learn MAC addresses dynamically via self-learning bridging as frames pass through their interfaces. When a host generates traffic, such as ARP or NDP during a pingall, the switch inspects the source MAC address and records it in its MAC table alongside the receiving port.
+
+      As captured in evidence/macs.txt using `brctl showmacs`, each switch associates host MAC addresses with specific port numbers, allowing subsequent frames to be forwarded directly rather than broadcast to all ports.
+
+  kind:
+    question: "Which of the four kinds of programmability is this assignment (a network described as data, then built and documented by scripts)? Why isn't it any of the other three?"
+    answer: |
+      This assignment represents Infrastructure as Code (or declarative configuration / data-driven network automation), where the entire network topology is described as structured data and built deterministically by scripts.
+
+      It is not on-box scripting (CLI automation via standard Telnet/SSH scripts running commands), control plane SDN (OpenFlow-based flow table manipulation via a centralized controller), or programmable data planes (custom packet processing pipelines defined in languages like P4).
+
+  two_am:
+    question: "Week 1's 2 a.m. change on 40 switches: what would be different if those switches were described like your network?"
+    answer: |
+      If the 40 switches were defined like this network using data files and scripts, an engineer would update a single declarative configuration file or data model and run an automated script to deploy and validate changes across all switches simultaneously.
+
+      Instead of manually SSHing into 40 individual devices late at night with a high risk of human error, the change would be version-controlled, tested locally against pre-checks like check(), and safely applied automatically.
+
+  model:
+    question: "What's the difference between your network's data model and its serialisation? Use YAML and JSON as the example."
+    answer: |
+      The data model is the abstract logical structure defining the network entities and their relationships—such as list of switches, host address dictionaries, and node link pairs.
+
+      Serialization is the concrete text format used to represent and store that data model in a file. YAML and JSON are two different serializations of the exact same data model, which python3 build_topo.py can load interchangeably into memory.
+
+  check:
+    question: "Why is it better to catch bad data in check() than with pingall? What did IPv6 notice about a duplicate address that IPv4 didn't?"
+    answer: |
+      Catching bad data in check() prevents deployment of invalid configurations before the network is built, saving time and avoiding subtle runtime failures that pingall might mask.
+
+      In evidence/dad.txt, IPv6's Duplicate Address Detection (DAD) actively detected the duplicate IPv6 address during startup using ICMPv6 Neighbor Solicitation and marked the address as tentative/dadfailed. IPv4 has no mandatory default equivalent during address assignment, so it silently accepted duplicate addresses and led to broken routing without warning.
+
+  git:
+    question: "What does your Git history give you that copying files into folders named topology-v2-final wouldn't?"
+    answer: |
+      Git history provides line-by-line revision tracking, exact commit messages, and author timestamps, allowing anyone to see precisely what changed, why, and by whom over time.
+
+      Unlike manual folder renaming, Git allows seamless branching, effortless rollbacks to previous working states, and clean collaboration without cluttering the project directory with redundant folder copies.
