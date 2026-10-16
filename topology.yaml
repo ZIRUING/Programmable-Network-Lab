@@ -12,6 +12,8 @@ student_id_last4: "3540"
 switches:
   - s1
   - s2
+  - s3
+  - s4
 
 hosts:
   - name: h1
@@ -26,12 +28,32 @@ hosts:
   - name: h4
     ip: 10.40.0.4/24
     ipv6: fd00:3540::4/64
+  - name: h5
+    ip: 10.40.0.5/24
+    ipv6: fd00:3540::5/64
+  - name: h6
+    ip: 10.40.0.6/24
+    ipv6: fd00:3540::6/64
+  - name: h7
+    ip: 10.40.0.7/24
+    ipv6: fd00:3540::7/64
+  - name: h8
+    ip: 10.40.0.8/24
+    ipv6: fd00:3540::8/64
 
 # Each link joins two nodes.
+# Inter-switch links form a chain (s1 <-> s2 <-> s3 <-> s4) for full reachability.
 links:
+  # Host connections (2 hosts per switch)
   - [h1, s1]
   - [h2, s1]
-  - [h3, s1]
+  - [h3, s2]
   - [h4, s2]
+  - [h5, s3]
+  - [h6, s3]
+  - [h7, s4]
+  - [h8, s4]
+  # Switch interconnections
   - [s1, s2]
-
+  - [s2, s3]
+  - [s3, s4]

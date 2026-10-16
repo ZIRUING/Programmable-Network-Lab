@@ -54,24 +54,49 @@ def check_mine(spec):
 def check(spec):
     """Return a list of problems in the description (an empty list means it looks fine).
 
-    Week 2 task: report any IP address that is used by more than one host.
+    - Report duplicate IPv4 and IPv6 addresses.
+    - Report links referencing non-existent switches or hosts.
     """
     problems = []
-    seen_addresses = {}  # maps IP address string -> host name
+    seen_addresses = {}  # maps ipaddress object -> host name
 
+    # 1. Check duplicate IPv4 and IPv6 addresses
     for host in spec.get("hosts", []):
         host_name = host.get("name")
         for key in ("ip", "ipv6"):
             if key in host:
-                # Strip the prefix length (CIDR notation) from the address
-                address = str(host[key]).split("/")[0]
+                try:
+                    # Strip CIDR subnet mask and parse via ipaddress module
+                    raw_addr = str(host[key]).split("/")[0]
+                    parsed_addr = ipaddress.ip_address(raw_addr)
 
-                if address in seen_addresses:
-                    problems.append(
-                        f"IP address {address} is used by both {seen_addresses[address]} and {host_name}"
-                    )
-                else:
-                    seen_addresses[address] = host_name
+                    if parsed_addr in seen_addresses:
+                        problems.append(
+                            f"IP address {parsed_addr} is used by both {seen_addresses[parsed_addr]} and {host_name}"
+                        )
+                    else:
+                        seen_addresses[parsed_addr] = host_name
+                except ValueError:
+                    # Invalid IP address formats are handled in check_mine()
+                    pass
+
+    # 2. Check that every link connects existing nodes
+    known_switches = set(spec.get("switches", []))
+    known_hosts = {h.get("name") for h in spec.get("hosts", []) if "name" in h}
+    known_nodes = known_switches | known_hosts
+
+    for link in spec.get("links", []):
+        if len(link) != 2:
+            problems.append(f"Invalid link definition: {link}")
+            continue
+
+        node_a, node_b = link[0], link[1]
+
+        if node_a not in known_nodes:
+            problems.append(f"Link references unknown node '{node_a}'")
+        if node_b not in known_nodes:
+            problems.append(f"Link references unknown node '{node_b}'")
+
     return problems
 
 
