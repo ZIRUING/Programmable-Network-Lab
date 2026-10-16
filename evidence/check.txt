@@ -1,0 +1,4 @@
+PROBLEM: IP address 10.40.0.1 is used by both h1 and h2
+PROBLEM: IP address fd00:3540::1 is used by both h1 and h2
+PROBLEM: Link references unknown node 's99'
+Fix the description and try again.
